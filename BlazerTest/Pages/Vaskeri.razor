@@ -1,0 +1,89 @@
+﻿@page "/Vaskeri"
+
+@using DataAcessLib
+@using DataAcessLib.Models
+@using BlazerTest.Models
+
+@inject IVaskeriData _db
+
+
+<h3>Vaskeri side</h3>
+
+<h4>Oprette ny bruger</h4>
+<EditForm Model="@nyBruger" OnValidSubmit="@InsertBruger">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <InputText id="Navn" @bind-Value="nyBruger.bruger_navn" />
+    <InputText id="Email" @bind-Value="nyBruger.email" />
+    <InputText id="password" @bind-Value="nyBruger.password" />
+    <InputNumber id="konto" @bind-Value="nyBruger.konto" />
+    <InputNumber id="vaskeri" @bind-Value="nyBruger.vaskeri_id" />
+    <InputDate id="name" @bind-Value="nyBruger.oprettet" />
+    
+    <button type="indsæt" class="btn btn-primary">Indsæt</button>
+
+</EditForm>
+
+<h4> Bruger</h4>
+@if (bruger is null)
+{
+    <p><em> Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Bruger Navn</th>
+            <th>Email</th>
+            <th>password</th>
+            <th>konto</th>
+            <th>vaskeri_id</th>
+            <th>Oprettet</th>
+        </tr>
+
+        </thead>
+            <tbody>
+                @foreach (var bruge in bruger)
+                {
+                    <tr>
+                        <td>@bruge.bruger_navn</td>
+                        <td>@bruge.email</td>
+                        <td>@bruge.password</td>
+                        <td>@bruge.konto</td>
+                        <td >@bruge.vaskeri_id</td>
+                        <td>@bruge.oprettet.ToShortDateString()</td>
+                    </tr>
+                }
+            </tbody>
+    </table>
+}
+
+@code {
+    private List<BrugerModel> bruger;
+    private DisplayBrugerModel nyBruger = new DisplayBrugerModel();
+
+    protected override async Task OnInitializedAsync()
+    {
+        bruger = await _db.GetBruger();
+    }
+
+    private async Task InsertBruger()
+    {
+        BrugerModel b = new BrugerModel()
+        {
+            bruger_navn = nyBruger.bruger_navn,
+            email = nyBruger.email,
+            password = nyBruger.password,
+            konto = nyBruger.konto,
+            vaskeri_id = nyBruger.vaskeri_id,
+            oprettet = nyBruger.oprettet
+
+        };
+
+        await _db.InsertPerson(b);
+        bruger = await _db.GetBruger();
+        nyBruger = new DisplayBrugerModel();
+
+    }
+}
